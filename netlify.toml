@@ -1,6 +1,6 @@
 [build]
 publish = "public"
-functions = "function"
+functions = "functions"
 
 [dev]
 command = "npm run dev" # Sesuaikan dengan skrip dev Anda
