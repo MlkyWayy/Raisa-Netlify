@@ -1,0 +1,8 @@
+[build]
+publish = "public"
+functions = "functions"
+
+[dev]
+command = "npm run dev" # Sesuaikan dengan skrip dev Anda
+port = 3000
+publish = "public"

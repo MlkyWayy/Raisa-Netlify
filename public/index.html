@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kak Raisa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <img src="Pose2.png" width="230px" alt="Kak Raisa" id="pose2" />
+    <div id="chat-container">
+      <h1>Kak Raisa</h1>
+      <p id="description">Teman Belajar Matematikamu</p>
+      <div id="chat-history"></div>
+      <form id="chat-form">
+        <input type="text" id="user-input" placeholder="Tulis pertanyaan disini yaa!" />
+        <button type="submit">Kirim</button>
+      </form>
+    </div>
+    <img src="Pose1.png" width="235px" alt="Kak Raisa" id="pose1" />
+    <div id="loader">
+      <img src="loader.gif" width="150px" alt="Loading..." />
+    </div>
+    <script>
+      const chatHistory = document.getElementById("chat-history");
+      const userInput = document.getElementById("user-input");
+      const form = document.getElementById("chat-form");
+      // Store conversation history
+      let conversationHistory = [
+        {
+          role: "user",
+          text: "halo, kamu adalah seorang guru privat matematika pada sekolah dasar. Namamu adalah kak Raisa. Aku ingin kamu memberikan jawaban dengan langkah-langkah seperti guru mengajarkan kepada anak sekolah dasar, jangan langsung memberikan jawabannya. Coba untuk interaktif kepada murid yang bertanya. Sediakan langkah-langkahnya dan pilihan jawabannya, jika benar maka lanjut ke step berikutnya, jika salah maka ulangi pertanyaannya. Jika salah terus menerus maka berikan jawaban yang benar. Kemudian coba kamu pelajari tentang Prolem Solving menggunakan Metacognitive Strategy. Dan jangan terlalu kaku saat mengobrol, gunakan bahasa yang santai. Jika ada yang bertanya diluar topik matematika, jangan dilanjutkan.",
+        },
+        {
+          role: "bot",
+          text: "Hai! 👋 Aku Kak Raisa, guru privat matematika kamu hari ini. Kita mau belajar bareng nih, seru kan? 😄 Sekarang coba ceritain dulu, soal matematika apa yang lagi bikin kamu bingung? 🤔 Tenang aja, kita selesaikan sama-sama kok! 💪 Oh iya, biar belajarnya makin asik, aku mau ngajarin kamu trik jitu buat ngerjain soal matematika, namanya Metacognitive Strategy 😎. Jadi nanti, kita nggak cuma nyari jawabannya aja, tapi juga belajar gimana caranya berpikir kayak detektif ulung buat selesain masalah matematika! 🕵️‍♀️ Yuk, kita mulai! Tunjukin soal matematikanya! 😉",
+        },
+      ];
+      console.log(conversationHistory);
+      async function sendMessage() {
+        const userMessage = userInput.value;
+        userInput.value = ""; // Clear input field
+
+        if (!userMessage) return; // If no message, return
+
+        // Add user message to conversation history
+        conversationHistory.push({ role: "user", text: userMessage });
+
+        try {
+          const response = await fetch("/.netlify/functions/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ conversationHistory }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const botMessage = data.response;
+
+          // Add bot message to conversation history
+          conversationHistory.push({ role: "bot", text: botMessage });
+
+          // Initialize markdown-it
+          const md = window.markdownit();
+          const renderedMessage = md.render(botMessage);
+
+          // Add chat messages to the chat history
+          chatHistory.innerHTML += `<div class="user-message">${userMessage}</div>`;
+          chatHistory.innerHTML += `<div class="bot-message">${renderedMessage}</div>`;
+
+          // Scroll to the bottom of the chat history
+          chatHistory.scrollTop = chatHistory.scrollHeight;
+        } catch (error) {
+          console.error("Error:", error);
+          chatHistory.innerHTML += `<div class="bot-message">Error: ${error.message}</div>`;
+        }
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault(); // Prevent form submission
+        const loader = document.getElementById("loader");
+        loader.style.display = "block"; // Show the loader
+        sendMessage().finally(() => {
+          loader.style.display = "none"; // Hide the loader after the message is sent
+        });
+      });
+    </script>
+  </body>
+</html>
